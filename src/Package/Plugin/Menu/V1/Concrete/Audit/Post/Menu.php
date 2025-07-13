@@ -37,8 +37,11 @@ if (!class_exists(__NAMESPACE__.'\Menu'))
 
         public function init_hook() : void
         {
-            // Add filter to collect menu items
-            add_filter($this->menu_filter_name, [$this, 'add_menu_items']);
+            if(!$this->menu_exists('flex-supervisor-audit-post'))
+            {
+                // Add filter to collect menu items
+                add_filter($this->menu_filter_name, [$this, 'add_menu_items']);
+            }
             
         }
 
@@ -47,7 +50,7 @@ if (!class_exists(__NAMESPACE__.'\Menu'))
          */
         public function add_menu_items($menu_items = [])
         {
-
+            
             $menu_items[] = [
                 'type' => 'submenu',
                 'parent_slug' => 'flex-supervisor',
@@ -57,7 +60,7 @@ if (!class_exists(__NAMESPACE__.'\Menu'))
                 'menu_slug' => 'flex-supervisor-audit-post',
                 'callback' => [$this->postAudit, 'render'],
                 'position' => 2,
-            ];
+            ];            
 
             return $menu_items;
         }
@@ -76,7 +79,7 @@ if (!class_exists(__NAMESPACE__.'\Menu'))
         /**
          * Custom main page render
          */
-        public function render_submenu()
+        public function render()
         {
             echo '<div class="wrap">';
             echo '<h1>Sub Menu Dashboard</h1>';

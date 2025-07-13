@@ -37,28 +37,15 @@ class Audit extends BaseAudit
     }
 
     public function init_hook()
-    {
+    {  
         //add_filter(PLUGIN_PRE_UNDS.'_admin_menu', [$this, 'add_menu_items']);
     }
 
-    /**
-     * Add default menu items (can be overridden by other plugins/themes)
-     */
-    // public function add_menu_items($menu_items = [])
-    // {
-    //     // $menu_items[] = [
-    //     //     'type' => 'submenu',
-    //     //     'parent_slug' => 'flex-supervisor',
-    //     //     'page_title' => 'Post',
-    //     //     'menu_title' => 'Post',
-    //     //     'capability' => 'manage_options',
-    //     //     'menu_slug' => 'flex-supervisor-audit-post',
-    //     //     'callback' => [$this, 'render'],
-    //     //     'position' => 2,
-    //     // ];
-
-    //     //return $menu_items;
-    // }
+    public function render(): void
+    {
+        $this->init();
+        $this->handleAuditRequest();
+    }
 
     /**
      * Display all post meta for a specific post in a table
@@ -99,6 +86,22 @@ class Audit extends BaseAudit
             return;
         }
 
+        ?>
+        <h3><?php printf(esc_html__('Post details of #%d', 'flex-supervisor'), 
+                $post->ID, 
+                esc_html($post->post_title)); ?>
+        </h3>
+        <?php
+
+        $this->render_post_details($post);
+
+        ?>
+         <h3><?php printf(esc_html__('Post Metas of #%s', 'flex-supervisor'), 
+                
+                esc_html($post->post_title)); ?>
+        </h3>
+        <?php
+
         $this->render_meta_table($all_meta);
     }
 
@@ -109,7 +112,7 @@ class Audit extends BaseAudit
     {
         ?>
         <div class="wrap">
-            <h1><?php printf(esc_html__('Post Meta Data for #%d: %s', 'flex-supervisor'), 
+            <h1><?php printf(esc_html__('Post Data for #%d: %s', 'flex-supervisor'), 
                 $post->ID, 
                 esc_html($post->post_title)); ?>
             </h1>
@@ -121,12 +124,23 @@ class Audit extends BaseAudit
         <?php
     }
 
+        /**
+     * Render meta data in a table
+     */
+    protected function render_post_details($post): void
+    {
+        ?>
+        <?php echo "<pre>";print_r($post);echo "</pre>"; ?>
+        <?php
+    }
+
     /**
      * Render meta data in a table
      */
     protected function render_meta_table(array $all_meta): void
     {
         ?>
+        
         <table class="widefat fixed striped">
             <thead>
                 <tr>
@@ -225,71 +239,7 @@ class Audit extends BaseAudit
 
     public function view_all_meta()
     {
-        // Get all post meta
-        $all_meta = get_post_meta($this->object_id);
         
-        echo '<div class="wrap">';
-        echo '<h1>Post Meta Data for #' . esc_html($this->object_id) . '</h1>';
-        echo '<p><a href="' . get_edit_post_link($this->object_id) . '">&larr; Back to post editor</a></p>';
-        
-        if (empty($all_meta)) {
-            echo '<div class="notice notice-info"><p>No meta data found for this post.</p></div>';
-            echo '</div>';
-            return;
-        }
-
-        echo '<table class="widefat fixed striped">
-                <thead>
-                    <tr>
-                        <th width="25%">Meta Key</th>
-                        <th width="75%">Meta Value</th>
-                    </tr>
-                </thead>
-                <tbody>';
-
-        foreach ($all_meta as $meta_key => $meta_values) {
-            echo '<tr>';
-            echo '<td><strong>' . esc_html($meta_key) . '</strong></td>';
-            echo '<td>';
-            
-            foreach ($meta_values as $value) {
-                $unserialized = maybe_unserialize($value);
-                
-                if (is_array($unserialized) || is_object($unserialized)) {
-                    echo '<pre>' . esc_html(print_r($unserialized, true)) . '</pre>';
-                } else {
-                    echo esc_html($value);
-                }
-                
-                echo '<hr style="margin: 5px 0; border: 0; border-top: 1px dashed #ccc;">';
-            }
-            
-            echo '</td>';
-            echo '</tr>';
-        }
-
-        echo '</tbody></table>';
-        
-        // Add styling
-        echo '<style>
-            .wrap { margin: 20px; }
-            table.widefat { border-collapse: collapse; margin-top: 20px; }
-            table.widefat th, 
-            table.widefat td { padding: 10px; border: 1px solid #e5e5e5; vertical-align: top; }
-            table.widefat th { background-color: #f7f7f7; font-weight: 600; }
-            table.widefat pre { 
-                margin: 0; 
-                white-space: pre-wrap; 
-                max-width: 100%; 
-                overflow-x: auto;
-                background: #f5f5f5;
-                padding: 5px;
-                border-radius: 3px;
-            }
-            .notice { margin: 20px 0 !important; }
-        </style>';
-        
-        echo '</div>';
     }
     
 }

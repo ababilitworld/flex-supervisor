@@ -24,12 +24,6 @@ abstract class Audit implements AuditContract
     {
         //
     }
-    
-    public function render(): void
-    {
-        //$this->init();
-        $this->handleAuditRequest();
-    }
 
     public function handleAuditRequest(): void
     {

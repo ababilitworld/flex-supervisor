@@ -31,31 +31,18 @@ class Audit extends BaseAudit
 
     public function init_service()
     {
-        // Initialize any services here
+        // Initialize any term-specific services
     }
 
     public function init_hook()
-    {
-        //add_filter(PLUGIN_PRE_UNDS.'_admin_menu', [$this, 'add_menu_items']);
+    {  
+        // Add term-specific hooks if needed
     }
 
-    /**
-     * Add default menu items (can be overridden by other plugins/themes)
-     */
-    public function add_menu_items($menu_items = [])
+    public function render(): void
     {
-        $menu_items[] = [
-            'type' => 'submenu',
-            'parent_slug' => 'flex-supervisor',
-            'page_title' => 'Term',
-            'menu_title' => 'Term',
-            'capability' => 'manage_options',
-            'menu_slug' => 'flex-supervisor-audit-terms',
-            'callback' => [$this, 'render'],
-            'position' => 2,
-        ];
-
-        return $menu_items;
+        $this->init();
+        $this->handleAuditRequest();
     }
 
     public function applyAuditAction(): void 
@@ -84,39 +71,81 @@ class Audit extends BaseAudit
         // Begin output
         $this->render_header($term);
         
+        // Term details section
+        ?>
+        <h3><?php printf(esc_html__('Term details of #%d', 'flex-supervisor'), 
+                $term->term_id); ?>
+        </h3>
+        <?php
+        $this->render_term_details($term);
+
+        // Term meta section
         if (empty($all_meta)) {
             $this->render_notice('No meta data found for this term.');
             return;
         }
 
+        ?>
+        <h3><?php printf(esc_html__('Term Metas of "%s"', 'flex-supervisor'), 
+                esc_html($term->name)); ?>
+        </h3>
+        <?php
         $this->render_meta_table($all_meta);
     }
 
-    /**
-     * Render the page header with back link
-     */
     protected function render_header(\WP_Term $term): void
     {
         $edit_link = get_edit_term_link($term->term_id, $term->taxonomy);
         ?>
         <div class="wrap">
-            <h1><?php printf(esc_html__('Term Meta Data for #%d: %s', 'flex-supervisor'), 
+            <h1><?php printf(esc_html__('Term Data for #%d: %s', 'flex-supervisor'), 
                 $term->term_id, 
                 esc_html($term->name)); ?>
             </h1>
-            <p>
-                <?php if ($edit_link): ?>
+            <?php if ($edit_link): ?>
+                <p>
                     <a href="<?php echo esc_url($edit_link); ?>" class="button">
                         &larr; <?php esc_html_e('Back to term editor', 'flex-supervisor'); ?>
                     </a>
-                <?php endif; ?>
-            </p>
+                </p>
+            <?php endif; ?>
         <?php
     }
 
-    /**
-     * Render meta data in a table
-     */
+    protected function render_term_details(\WP_Term $term): void
+    {
+        ?>
+        <table class="widefat fixed striped">
+            <tbody>
+                <tr>
+                    <th width="25%"><?php esc_html_e('Term ID', 'flex-supervisor'); ?></th>
+                    <td><?php echo esc_html($term->term_id); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e('Name', 'flex-supervisor'); ?></th>
+                    <td><?php echo esc_html($term->name); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e('Slug', 'flex-supervisor'); ?></th>
+                    <td><?php echo esc_html($term->slug); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e('Taxonomy', 'flex-supervisor'); ?></th>
+                    <td><?php echo esc_html($term->taxonomy); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e('Description', 'flex-supervisor'); ?></th>
+                    <td><?php echo esc_html($term->description); ?></td>
+                </tr>
+                <tr>
+                    <th><?php esc_html_e('Count', 'flex-supervisor'); ?></th>
+                    <td><?php echo esc_html($term->count); ?></td>
+                </tr>
+            </tbody>
+        </table>
+        <?php
+    }
+
     protected function render_meta_table(array $all_meta): void
     {
         ?>
@@ -145,35 +174,7 @@ class Audit extends BaseAudit
         $this->render_styles();
     }
 
-    public function view_all_meta(): void
-    {
-        // Validate and get term object
-        $term = get_term($this->object_id);
-        if (!$term || is_wp_error($term)) {
-            $this->render_notice('Term not found.', 'error');
-            return;
-        }
-
-        // Get all term meta
-        $all_meta = get_term_meta($this->object_id);
-        
-        // Begin output
-        $this->render_header($term);
-        
-        if (empty($all_meta)) {
-            $this->render_notice('No meta data found for this term.');
-            return;
-        }
-
-        $this->render_meta_table($all_meta);
-    }
-
-    // The following methods remain the same as in your Post Audit class
-    // since they're generic enough to work with both posts and terms
-    
-    /**
-     * Render individual meta value
-     */
+    // The following methods remain the same as in Post Audit
     protected function render_meta_value($value): void
     {
         $unserialized = maybe_unserialize($value);
@@ -185,9 +186,6 @@ class Audit extends BaseAudit
         }
     }
 
-    /**
-     * Render admin notice
-     */
     protected function render_notice(string $message, string $type = 'info'): void
     {
         ?>
@@ -197,9 +195,6 @@ class Audit extends BaseAudit
         <?php
     }
 
-    /**
-     * Add custom styles
-     */
     protected function render_styles(): void
     {
         ?>
@@ -240,5 +235,10 @@ class Audit extends BaseAudit
             }
         </style>
         <?php
+    }
+
+    public function view_all_meta()
+    {
+        // Implement if you need a meta-only view
     }
 }

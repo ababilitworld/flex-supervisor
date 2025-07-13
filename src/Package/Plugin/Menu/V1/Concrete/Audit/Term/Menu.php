@@ -76,7 +76,7 @@ if (!class_exists(__NAMESPACE__.'\Menu'))
         /**
          * Custom main page render
          */
-        public function render_submenu()
+        public function render()
         {
             echo '<div class="wrap">';
             echo '<h1>Sub Menu Dashboard</h1>';
